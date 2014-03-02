@@ -1,0 +1,410 @@
+trigger leadAssign on Lead (before insert, after insert, after  update) {
+
+     if (Trigger.isBefore && Trigger.isInsert) {
+     List<Group> dqscope  = [SELECT Id, Name FROM Group Where Name = 'D-Lead queue'];
+     Boolean bQuit = false;
+
+     List<StaffedLocation__c> slocs = [SELECT Default_Staff_User__c, City__c, CreatedById, CreatedDate, IsDeleted, LastModifiedById,
+      LastModifiedDate, Last_Assign__c, OwnerId, Id, Staff0__c, Staff1__c, Staff10__c, Staff11__c,
+      Staff12__c, Staff13__c, Staff14__c, Staff15__c, Staff2__c, Staff3__c, Staff4__c, Staff5__c,
+      Staff6__c, Staff7__c, Staff8__c, Staff9__c,TeamCnt__c, Last_Assign_US__c, Zips__c,
+      Offline0__c,Offline1__c,Offline2__c,Offline3__c,Offline4__c,Offline5__c,Offline6__c,Offline7__c,Offline8__c,Offline9__c,
+      Offline10__c,Offline11__c,Offline12__c,Offline13__c,Offline14__c,Offline15__c
+      FROM StaffedLocation__c FOR UPDATE];  // FOR UPDATE
+
+     List<InsiderTeam__c> itlocs = [SELECT Default_Sales_User__c, CreatedById, CreatedDate, IsDeleted, Name, InsiderTeam0__c,
+      InsiderTeam1__c, InsiderTeam10__c, InsiderTeam11__c, InsiderTeam12__c, InsiderTeam13__c,
+      InsiderTeam14__c, InsiderTeam15__c, InsiderTeam16__c, InsiderTeam17__c, InsiderTeam18__c,
+      InsiderTeam19__c, InsiderTeam2__c, InsiderTeam20__c, InsiderTeam3__c, InsiderTeam4__c,
+      InsiderTeam6__c, InsiderTeam7__c, InsiderTeam5__c, InsiderTeam8__c, InsiderTeam9__c, LastModifiedById,
+      LastModifiedDate, Last_Assign__c, OwnerId, Id, SystemModstamp, TeamName__c, TeamCnt__c,
+      Last_Assign_IT__c,
+      Offline0__c,Offline1__c,Offline2__c,Offline3__c,Offline4__c,Offline5__c,Offline6__c,Offline7__c,Offline8__c,Offline9__c,
+      Offline10__c,Offline11__c,Offline12__c,Offline13__c,Offline14__c,Offline15__c,Offline16__c,Offline17__c,Offline18__c,
+      Offline19__c,Offline20__c,
+      Felix_Category__c, Felix_Team__c, Felix_Counter__c
+      FROM InsiderTeam__c FOR UPDATE];  // FOR UPDATE
+
+      List<ID> lsid = new List<ID>();
+      List<ID> fid = new List<ID>();  // felix
+
+      List<String> lsteams = new List<String>();
+      List<String> fteams = new List<String>();   // felix
+
+      Map<String, InsiderTeam__c> insideTeamLeaders = new Map<String, InsiderTeam__c>();
+      Map<String, StaffedLocation__c> FieldTeamLeaders = new Map<String, StaffedLocation__c>();
+
+      List <ID> smid = new List<ID>();
+      List <String> smcity = new List<String>();
+
+      Set<id> ownerIds = new Set<id>();
+
+      // Get all the felix picklist entries
+      Schema.DescribeFieldResult AllFelixCategories = InsiderTeam__c.Felix_Category__c.getDescribe();
+      List<Schema.PicklistEntry> fple1 = AllFelixCategories.getPicklistValues();
+
+
+      for (StaffedLocation__c s : slocs) {
+        s.TeamCnt__c = 0;
+        if(!(s.Staff0__c == null || s.Offline0__c == true)) {smid.add(s.Staff0__c); ownerIds.add(s.Staff0__c); smcity.add(s.City__c);s.TeamCnt__c++;}
+        if(!(s.Staff1__c == null || s.Offline1__c == true)) {smid.add(s.Staff1__c); ownerIds.add(s.Staff1__c); smcity.add(s.City__c);s.TeamCnt__c++;}
+        if(!(s.Staff2__c == null || s.Offline2__c == true)) {smid.add(s.Staff2__c); ownerIds.add(s.Staff2__c); smcity.add(s.City__c);s.TeamCnt__c++;}
+        if(!(s.Staff3__c == null || s.Offline3__c == true)) {smid.add(s.Staff3__c); ownerIds.add(s.Staff3__c); smcity.add(s.City__c);s.TeamCnt__c++;}
+        if(!(s.Staff4__c == null || s.Offline4__c == true)) {smid.add(s.Staff4__c); ownerIds.add(s.Staff4__c); smcity.add(s.City__c);s.TeamCnt__c++;}
+        if(!(s.Staff5__c == null || s.Offline5__c == true)) {smid.add(s.Staff5__c); ownerIds.add(s.Staff5__c); smcity.add(s.City__c);s.TeamCnt__c++;}
+        if(!(s.Staff6__c == null || s.Offline6__c == true)) {smid.add(s.Staff6__c); ownerIds.add(s.Staff6__c); smcity.add(s.City__c);s.TeamCnt__c++;}
+        if(!(s.Staff7__c == null || s.Offline7__c == true)) {smid.add(s.Staff7__c); ownerIds.add(s.Staff7__c); smcity.add(s.City__c);s.TeamCnt__c++;}
+        if(!(s.Staff8__c == null || s.Offline8__c == true)) {smid.add(s.Staff8__c); ownerIds.add(s.Staff8__c); smcity.add(s.City__c);s.TeamCnt__c++;}
+        if(!(s.Staff9__c == null || s.Offline9__c == true)) {smid.add(s.Staff9__c); ownerIds.add(s.Staff9__c); smcity.add(s.City__c);s.TeamCnt__c++;}
+        if(!(s.Staff10__c == null || s.Offline10__c == true)) {smid.add(s.Staff10__c); ownerIds.add(s.Staff10__c); smcity.add(s.City__c);s.TeamCnt__c++;}
+        if(!(s.Staff11__c == null || s.Offline11__c == true)) {smid.add(s.Staff11__c); ownerIds.add(s.Staff11__c); smcity.add(s.City__c);s.TeamCnt__c++;}
+        if(!(s.Staff12__c == null || s.Offline12__c == true)) {smid.add(s.Staff12__c); ownerIds.add(s.Staff12__c); smcity.add(s.City__c);s.TeamCnt__c++;}
+        if(!(s.Staff13__c == null || s.Offline13__c == true)) {smid.add(s.Staff13__c); ownerIds.add(s.Staff13__c); smcity.add(s.City__c);s.TeamCnt__c++;}
+        if(!(s.Staff14__c == null || s.Offline14__c == true)) {smid.add(s.Staff14__c); ownerIds.add(s.Staff14__c); smcity.add(s.City__c);s.TeamCnt__c++;}
+        if(!(s.Staff15__c == null || s.Offline15__c == true)) {smid.add(s.Staff15__c); ownerIds.add(s.Staff15__c); smcity.add(s.City__c);s.TeamCnt__c++;}
+        FieldTeamLeaders.put(s.City__c, s);
+        }
+
+      for (InsiderTeam__c t : itlocs ) {
+        t.TeamCnt__c=0;
+        if(!(t.InsiderTeam0__c == null || t.Offline0__c == true)) {lsid.add(t.InsiderTeam0__c); ownerIds.add(t.InsiderTeam0__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        if(!(t.InsiderTeam1__c == null || t.Offline1__c == true)) {lsid.add(t.InsiderTeam1__c); ownerIds.add(t.InsiderTeam1__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        if(!(t.InsiderTeam2__c == null || t.Offline2__c == true)) {lsid.add(t.InsiderTeam2__c); ownerIds.add(t.InsiderTeam2__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        if(!(t.InsiderTeam3__c == null || t.Offline3__c == true)) {lsid.add(t.InsiderTeam3__c); ownerIds.add(t.InsiderTeam3__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        if(!(t.InsiderTeam4__c == null || t.Offline4__c == true)) {lsid.add(t.InsiderTeam4__c); ownerIds.add(t.InsiderTeam4__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        if(!(t.InsiderTeam5__c == null || t.Offline5__c == true)) {lsid.add(t.InsiderTeam5__c); ownerIds.add(t.InsiderTeam5__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        if(!(t.InsiderTeam6__c == null || t.Offline6__c == true)) {lsid.add(t.InsiderTeam6__c); ownerIds.add(t.InsiderTeam6__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        if(!(t.InsiderTeam7__c == null || t.Offline7__c == true)) {lsid.add(t.InsiderTeam7__c); ownerIds.add(t.InsiderTeam7__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        if(!(t.InsiderTeam8__c == null || t.Offline8__c == true)) {lsid.add(t.InsiderTeam8__c); ownerIds.add(t.InsiderTeam8__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        if(!(t.InsiderTeam9__c == null || t.Offline9__c == true)) {lsid.add(t.InsiderTeam9__c); ownerIds.add(t.InsiderTeam9__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        if(!(t.InsiderTeam10__c == null || t.Offline10__c == true)) {lsid.add(t.InsiderTeam10__c); ownerIds.add(t.InsiderTeam10__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        if(!(t.InsiderTeam11__c == null || t.Offline11__c == true)) {lsid.add(t.InsiderTeam11__c); ownerIds.add(t.InsiderTeam11__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        if(!(t.InsiderTeam12__c == null || t.Offline12__c == true)) {lsid.add(t.InsiderTeam12__c); ownerIds.add(t.InsiderTeam12__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        if(!(t.InsiderTeam13__c == null || t.Offline13__c == true)) {lsid.add(t.InsiderTeam13__c); ownerIds.add(t.InsiderTeam13__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        if(!(t.InsiderTeam14__c == null || t.Offline14__c == true)) {lsid.add(t.InsiderTeam14__c); ownerIds.add(t.InsiderTeam14__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        if(!(t.InsiderTeam15__c == null || t.Offline15__c == true)) {lsid.add(t.InsiderTeam15__c); ownerIds.add(t.InsiderTeam15__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        if(!(t.InsiderTeam16__c == null || t.Offline16__c == true)) {lsid.add(t.InsiderTeam16__c); ownerIds.add(t.InsiderTeam16__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        if(!(t.InsiderTeam17__c == null || t.Offline17__c == true)) {lsid.add(t.InsiderTeam17__c); ownerIds.add(t.InsiderTeam17__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        if(!(t.InsiderTeam18__c == null || t.Offline18__c == true)) {lsid.add(t.InsiderTeam18__c); ownerIds.add(t.InsiderTeam18__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        if(!(t.InsiderTeam19__c == null || t.Offline19__c == true)) {lsid.add(t.InsiderTeam19__c); ownerIds.add(t.InsiderTeam19__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        if(!(t.InsiderTeam20__c == null || t.Offline20__c == true)) {lsid.add(t.InsiderTeam20__c); ownerIds.add(t.InsiderTeam20__c); lsteams.add(t.TeamName__c);t.TeamCnt__c++;}
+        insideTeamLeaders.put(t.TeamName__c, t);
+        }
+
+        System.debug('ENTERING LEADASSIGN TRIGGER :' );
+        //Read Staffed Location Objects (bulkify)
+
+          // List<RecordType> rid = [Select Id From RecordType WHERE Name = 'Prospecting Leads' LIMIT 1];
+          List<Group> tqscope  = [SELECT Id, Name FROM Group Where Name = 'Trouble Queue'];
+          List<Felix__c> felixparams = [Select Category1__c, Category2__c, Category3__c, Category4__c, FelixEmail__c  from Felix__c];
+
+          List<ZipLookup__c> zcodes = [SELECT MetroArea__c, ZipString__c FROM ZipLookup__c];
+
+          Boolean bBuzzLabs = false;
+
+          //DLeadCompute dls = new DLeadCompute();
+
+        integer lis;
+        Id rdx;
+        Id rdx1;
+        bBuzzLabs = false;
+        integer hw1 = (insideTeamLeaders.containsKey('Hollywood1')) ? Integer.valueOf(insideTeamLeaders.get('Hollywood1').TeamCnt__c) : 0;
+        integer hw2 = (insideTeamLeaders.containsKey('Hollywood2')) ? Integer.valueOf(insideTeamLeaders.get('Hollywood2').TeamCnt__c) : 0;
+        integer ch1 = (insideTeamLeaders.containsKey('Charlotte')) ? Integer.valueOf(insideTeamLeaders.get('Charlotte').TeamCnt__c) : 0;
+
+        integer itTeamCnt = hw1 + hw2 + ch1;
+
+        Map<id, User> owners = new Map<id, User>([SELECT Name,Id, Email, Account_Rep_ID__c, IsActive FROM User
+             WHERE Id in :ownerIds AND IsActive = True AND IsActive = true]);
+
+        Map<String, ID> ownerNames = new Map<String, ID>();
+        Map<String, ID> ownerEmails = new Map<String, ID>();
+        Map<String, ID> ownerPhone = new Map<String, ID>();
+
+        Map<String, Id> leadEmails = new Map<String, Id>();
+        Map<String, Id> leadPhone= new Map<String, Id>();
+
+        for (Lead l : System.Trigger.new) {   // build keyset of all emails in lead(s)
+            if(l.Email != null) { //...check to see of we have this email...
+                 if(!ownerEmails.containskey(l.Email)) { // ... we don't - so add it to keyset
+                   System.debug('INSERT ownerEmails :' + l.Email);
+                   ownerEmails.put(l.Email, null);
+                   }
+                 }
+            }
+
+        // NEW - we need to dedupe  on phone# if email = 'selfenroll@selfenroll.com'
+        for (Lead l : System.Trigger.new) {   // build keyset of all emails in lead(s)
+            if(l.Contact_Phone__c != null) { //...check to see of we have this email...
+                 if(!ownerEmails.containskey(l.Contact_Phone__c)) { // ... we don't - so add it to keyset
+                   System.debug('INSERT ownerEmails :' + l.Contact_Phone__c);
+                   ownerPhone.put(l.Contact_Phone__c, null);
+                   }
+                 }
+            }
+
+        for(Lead lx : [SELECT OwnerId, Email FROM lead WHERE email IN :ownerEmails.KeySet()  AND Owner.IsActive = true AND Email != NULL]) {
+            System.debug('DEBUG leadEmails :' + lx.Email);
+            leadEmails.put(lx.Email, lx.OwnerId);
+            }
+
+        // NEW - for deduping on selfenroll@selfenroll.com
+        //for(Lead lx : [SELECT OwnerId, Contact_Phone__c FROM lead WHERE Contact_Phone__c IN :ownerPhone.KeySet()  AND Owner.IsActive = true AND Contact_Phone__c != null]) {
+        //    System.debug('DEBUG leadPhone:' + lx.Contact_Phone__c);
+        //    leadPhone.put(lx.Contact_Phone__c, lx.OwnerId);
+        //    }
+
+        for (Lead l : System.Trigger.new) {
+           String lzip = l.PostalCode;
+           String acode = l.Assignment_Code__c;
+           bQuit = false;
+
+           System.debug('Primary Category :' + l.Primary_Category__c);
+           System.debug('YP Category :' + l.YP_Category__c);
+
+           // DATA CLEANUP...
+           if(l.LastName == null) {
+              l.LastName = 'unknown';
+              }
+           if (l.LeadSource == null)
+             l.LeadSource = '';
+
+            // PLEASE NOTE: To successfully run test classes and install this trigger, you'll need to be
+            // logged in as the api.user -- OR be sure to write your test class with System.RunAs('api.user...')
+            // to work... we are required to ignore all lead-insert activity if *not* the api.user.
+            System.debug('USER = ' + UserInfo.getUserName());
+
+            if((l.Lead_Market__c == null || l.Lead_Market__c.length() < 2) && l.PostalCode != null && l.PostalCode.length() > 4) { //try to find a valid lead metro area by zip...
+                for(ZipLookup__c z : zcodes) {
+                    if(z.ZipString__c.contains(l.PostalCode))
+                        l.Lead_Market__c = z.MetroArea__c;
+                    }
+                }
+
+            if(UserInfo.getUserName().contains('api.user@') == false) {  // ... then it's not coming from the API
+               System.debug('NOT API USER - EXITING');
+               System.debug('NOT API LEADID = ' + l.OwnerId);
+               bQuit = true;
+               break;
+               }
+            rdx = l.RecordTypeId;
+            // rdx1 = rid[0].Id;
+            System.debug('Lead Source: ' + l.LeadSource);
+            System.debug('Lead Rep ID: [' + l.RepId__c + ']');
+            System.debug('Quit: ' + bQuit);
+            //
+            // If repID is present - that trumps all assignment rule logic.
+            // If the repID is invalid (ie; not one of the teams) then asign to the D-lead queue
+            //
+            if(l.RepId__c  != null) {  // find repID from User record and reassign rep by that rule...
+                String lRepId;
+
+                for (ID iid : owners.keySet()) {
+                   lRepId = owners.get(iid).Account_Rep_ID__c;
+
+                   if(l.RepId__c == lRepId) {
+                     System.debug('FOUND REP ID: [' + lRepId + ']' );
+                     l.OwnerId = iid;
+                     l.Debug__c = 'leadInsert_4';
+                     bQuit = true;   // done with reassignment for this lead
+                     break; // we're done
+                     }
+                   }
+                if (l.Debug__c != 'leadInsert_4') {  // we didn't find the rep
+                   l.Debug__c = 'leadInsert_badRepID';
+                   l.OwnerId = dqscope[0].Id; // ...so assign to the D-lead queue
+                   bQuit = true;   // done with reassignment for this lead
+                   break; // we're done
+                   }
+                }
+            else { // RepID is *not* present - use assignment-rule logic
+               if(rdx == null             // || rdx1 == null || rdx == rdx1
+                  || l.LeadSource == 'Claimed' || l.LeadSource == 'Field - Target Lead List') {
+
+                  bQuit = true; // totally ignore prospecting leads
+                 }
+               else {
+                  // CHECK FOR A DUPLICATE
+                  if(l.Internal_1__c == 'DUPLICATE') {
+                     l.OwnerId = tqscope[0].Id;
+                     l.Debug__c = 'leadInsert_0';
+                     bQuit = true;
+                     System.debug('DUPLICATE ');
+                     }
+
+                 if(leadEmails.containsKey(l.Email) == true && bQuit == false) {
+                     System.debug('leadEmails.containsKey AND selfenroll@selfenroll.com');
+                     l.Internal_1__c = 'DUPLICATE';
+                     l.OwnerId = leadEmails.get(l.Email);
+                     l.Debug__c = 'leadInsert_0em';
+                     System.debug('INTERNAL BUZZLABS - IDEM');
+                     bQuit = true;
+                     break;
+                     } // end if email-duplicate
+
+                  if(bQuit == false) {
+                    for (Schema.PicklistEntry f : fple1) {
+                      String tmpfStr = f.getValue();
+                      if(tmpfStr == l.YP_Category__c) {  // this is a felix-category lead
+                        InsiderTeam__c it1 = insideTeamLeaders.get('CGMFelix');
+                        System.debug('insideTeamLeaders(felix): ' + it1.Id);
+                        for(Integer idx=0; idx < lsteams.size(); idx++) {
+                           // IMPOORTANT:  We expect 'Hollywood' to immediately proceed after Charlotte...
+                           if (lsteams[idx].contains('CGMFelix')) {
+                               
+                              System.debug('FELIX LEAD - IDX=' + idx);
+                              l.Internal_2__c = 'CGMFELIX';
+                              l.Felix_Lead__c = true;
+                              l.Debug__c = 'leadInsert_3f';
+
+                              Integer ifTeamCnt = Integer.valueOf(insideTeamLeaders.get('CGMFelix').TeamCnt__c);
+                              System.debug('ifTeamCnt: ' + ifTeamCnt);
+                              System.debug('it1.Felix_Counter__c = ' + it1.Felix_Counter__c);
+
+                              it1.Felix_Counter__c++;
+                              if(it1.Felix_Counter__c >= ifTeamCnt) {it1.Felix_Counter__c  = 0;}
+
+                              l.OwnerId = lsid[idx + integer.valueof(it1.Felix_Counter__c)];
+
+                              for (InsiderTeam__c t1 : itlocs) {t1.Felix_Counter__c = it1.Felix_Counter__c;}
+                              update itlocs;
+                              bQuit = true;
+                              break;   // we're done
+                              }
+                           }
+                        }   // end Felix processing
+                    }  // end FOR (felix leads)
+                  } // end (if(bQuit == false 
+                 }
+              }
+
+          // FIRST:  Check for CG Claim lead
+          if (bQuit == false && (l.LeadSource.contains('Self Enroll') == false)) {
+              System.debug('FIRST:  Check for Self - enroll ');
+              for (StaffedLocation__c s : slocs) {
+                   if(lzip != null && (s.Zips__c.contains(lzip) == true) && bQuit == false) {
+                       //Assign next rep in this position
+                       if(s.City__c == 'Atlanta') {  // we are dealing with these two specific teams...
+                           for(Integer idx=0; idx < smcity.size(); idx++) {
+                               if(smcity[idx] == s.City__c) {  // found start
+                               Integer cityStart = idx;
+                               System.debug('NOT SELF ENROLL ASSIGNMENT (ATL/CHARLOTTE)');
+                               s.Last_Assign__c++;
+                               if(s.Last_Assign__c >= s.TeamCnt__c)
+                                   s.Last_Assign__c = 0;
+                               l.OwnerId = smid[idx + integer.valueof(s.Last_Assign__c)];
+                               l.Debug__c = 'leadInsert_1';
+                               l.Internal_2__c = 'STAFFED';
+                               update s;
+                               bQuit = true;
+                               break;
+                               }
+                            }
+                         } // end special processibng for Atlanta and Charlotte
+                       break;
+                       } // end processing for zipcode territories
+                    }  // End processing for staffed locations
+
+                   if(l.Debug__c != 'leadInsert_1') {
+                        // ...Lead isn't in a staffed locaion, or if it is, it's not Atlanta or Charlotte, so
+                        //    assign it to Hollywood/Charlotte Inside
+                        System.debug('NOT SELF ENROLL ASSIGNMENT ');
+                        //System.debug('iCurrIdx = ' + iCurrIdx);
+                        System.debug('lsteams.size()= ' + lsteams.size());
+                        for (InsiderTeam__c  ls: itlocs) {
+                           // IMPOORTANT:  We expect 'Hollywood' to immediately proceed after Charlotte...
+                           if(ls.TeamName__c == 'Charlotte') {
+                              //System.debug('NOT SELF ENROLL ASSIGNMENT - STAFFED LOCATION - idx=' + idx);
+                              InsiderTeam__c it1 = ls; // break here -- we found Charlotte...
+                              l.Internal_2__c = 'INSIDER';
+                              l.Debug__c = 'leadInsert_3';
+
+                              System.debug('it1.Last_Assign_IT__c(0): ' + it1.Last_Assign_IT__c);
+                              System.debug('itTeamCnt: ' + itTeamCnt);
+
+                              it1.Last_Assign_IT__c++;
+                              if (it1.Last_Assign_IT__c == null) {it1.Last_Assign_IT__c = 0;}
+                              if(it1.Last_Assign_IT__c >= itTeamCnt) {it1.Last_Assign_IT__c = 0;}
+
+                              l.OwnerId = lsid[integer.valueof(it1.Last_Assign_IT__c)];
+                              for (InsiderTeam__c t1 : itlocs) {t1.Last_Assign_IT__c = it1.Last_Assign_IT__c;}
+                              update itlocs;
+                              break;   // we're done
+                              }
+                           }
+
+                        }
+                 } // end if NOT Self-enroll
+
+
+          // See if lead is for unstaffed market.   If yes or if lead is in Chicgo, assign
+          // the lead to ATL inside
+          if ((l.LeadSource.contains('Self Enroll') == true) && bQuit == false) {
+                boolean bGiveATL = false;   // Self-enroll to Atlanta
+                String sCity = null;
+                StaffedLocation__c s1 = FieldTeamLeaders.get('Chicago');
+                if(s1 != null && (s1.Zips__c.contains(lzip) == true)) {bGiveATL=true;} // this is chicago market lead
+
+                for (StaffedLocation__c s : slocs) {
+                    if(s.Zips__c.contains(lzip) == true) {
+                        System.debug('ASSIGN; sCity: ' + s.City__c);
+                        sCity = s.City__c;
+                        break;
+                        }
+                    }
+
+                System.debug('SELF ENROLL; bGiveATL: ' + bGiveATL);
+                System.debug('SELF ENROLL; sCity: ' + sCity);
+
+                if(bGiveATL == true || sCity == null) {   // assign to atlanta inside sales
+                    InsiderTeam__c it1 = insideTeamLeaders.get('Atlanta');
+
+                    for(Integer idx=0; idx < lsteams.size(); idx++) {
+                        if(lsteams[idx].contains('Atlanta')) {  // found start
+                            Integer cityStart = idx;
+                            it1.Last_Assign__c++;
+                            if(it1.Last_Assign__c >= it1.TeamCnt__c)
+                                it1.Last_Assign__c = 0;
+                            System.debug('SELF ENROLL; Last_Assign__c' + it1.Last_Assign_IT__c);
+                            System.debug('SELF ENROLL; cityStart' + cityStart);
+                            l.OwnerId = lsid[idx + integer.valueof(it1.Last_Assign__c)];
+                            l.Debug__c = 'leadInsert_1';
+                            l.Internal_2__c = 'STAFFED';
+                            System.debug('SELF ENROLL PAGE ASSIGNMENT - ');
+                            update it1;
+                            bQuit = true;
+                            break;
+                            }
+                        }
+                    } // end of ATL Assignment
+                else {  // ...Self-enroll (not ATL) goes to the team lead for the area
+                   if(sCity == 'Boston' ||sCity == 'LosAngeles' || sCity == 'NewYork' || sCity == 'Houston' || sCity == 'Atlanta' ) {  // we are dealing with these two specific teams...
+                       StaffedLocation__c s2 = FieldTeamLeaders.get(sCity);
+                       for(Integer idx=0; idx < smcity.size(); idx++) {
+                           if(smcity[idx] == sCity) {  // found start
+                              Integer cityStart = idx;
+                              System.debug('SELF ENROLL ASSIGNMENT (BOS/ATL/CHARLOTTE) City='+sCity);
+                              s2.Last_Assign__c++;
+                              if(s2.Last_Assign__c >= s2.TeamCnt__c)
+                                  s2.Last_Assign__c = 0;
+                              l.OwnerId = smid[idx + integer.valueof(s2.Last_Assign__c)];
+                              l.Debug__c = 'leadInsert_1x';
+                              l.Internal_2__c = 'STAFFED SELF-ENROLL';
+                              update s2;
+                              bQuit = true;
+                              break;
+                              }
+                           }
+                        } // end special processibng for Atlanta and Charlotte
+                   else {
+                       System.debug('SELF ENROLL FIELD ASSIGNMENT - TEAM LEAD');
+                       sCity = (sCity == null) ? 'Atlanta' : sCity;
+                       l.OwnerId = FieldTeamLeaders.get(sCity).Default_Staff_User__c;
+                       break;  // go to next lead (if any)
+                       }
+                   }
+                }  // End processing for Self-enroll leads
+          }
+     } // end if (Trigger.isBefore)
+
+}
